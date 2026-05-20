@@ -1,0 +1,21 @@
+{
+  "name": "video_app_Backend",
+  "version": "1.0.0",
+  "description": "This is a video streaming web app",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run dev"
+  },
+  "keywords": [
+    "node.js",
+    "express.js",
+    "mongodb",
+    "mongoose",
+    "javascript"
+  ],
+  "author": "Randhir Kumar",
+  "license": "ISC",
+  "dependencies": {
+    "node": "^22.22.3"
+  }
+}
