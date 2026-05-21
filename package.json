@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "This is a video streaming web app",
   "main": "index.js",
+  "type" :"module",
   "scripts": {
-    "test": "npm run dev"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
   "keywords": [
     "node.js",
@@ -17,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "color": "^5.0.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.6.2",
     "node": "^22.22.3",
