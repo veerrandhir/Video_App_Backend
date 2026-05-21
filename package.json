@@ -1,5 +1,5 @@
 {
-  "name": "video_app_Backend",
+  "name": "video_app",
   "version": "1.0.0",
   "description": "This is a video streaming web app",
   "main": "index.js",
@@ -16,6 +16,10 @@
   "author": "Randhir Kumar",
   "license": "ISC",
   "dependencies": {
-    "node": "^22.22.3"
+    "color": "^5.0.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.2",
+    "node": "^22.22.3",
+    "nodemon": "^3.1.14"
   }
 }
