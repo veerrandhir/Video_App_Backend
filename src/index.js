@@ -10,10 +10,14 @@ const app = express();
 connectDB();
 
 app.get("/", (req, res) => {
-  res.send("hello world this is vide server");
+  res.send("hello world this is video server");
 });
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running at port ${process.env.PORT}`);
+  app.on("error", (error) => {
+    console.error(" # ERROR :  While connecting with Server", error);
+    throw error;
+  });
   //   console.error("ERROR: Some thing went wrong while creating server");
 });
