@@ -63,6 +63,7 @@ userSchema.pre("save", async function (next) {
 // this method adds isPasswordCorrect method to each and every object
 
 userSchema.methods.isPasswordCorrect = async function (password) {
+    // custom methods added to userSchema 
   return await bcrypt.compare(password, this.password);
 };
 

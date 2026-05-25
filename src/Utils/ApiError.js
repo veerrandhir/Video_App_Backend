@@ -1,4 +1,7 @@
+import { devNull } from "os";
+
 class ApiError extends Error {
+  // “Take everything from Error class and add extra features.”
   constructor(
     statusCode,
     message = "Something went wrong",
@@ -7,7 +10,8 @@ class ApiError extends Error {
   ) {
     super(message);
     this.statusCode = statusCode;
-    this.data = this.sussess = false;
+    this.data = null;
+    this.sussess = false;
     this.error = error;
 
     if (stack) {
