@@ -23,4 +23,11 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 app.use(cookieParser());
 
+// router
+// Simply we call rauter form here and this incoke user.router then
+
+import userRouter from "./Routes/user.routes.js";
+
+app.use("api/v1/users", userRouter);
+
 export { app };
