@@ -11,8 +11,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // create user and save detail to db
   // return details but no need to return password and refresh token
 
-  const { fullName, email, username, avatar, password, coverImage } =
-    req.body();
+  const { fullName, email, username, password } = req.body;
   // here we are handling just data but to handle file too we need to inject multer middleware on register user router
   // Manual checking of each field
   //   if (fullName == "") {
@@ -32,7 +31,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // Alternate : Checking all field using some method New and advance concept
 
   if (
-    [email, password, username, avatar, fullName].some(
+    [email, password, username, fullName].some(
       (fields) => fields?.trim() === "",
     )
   ) {
@@ -41,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // find duplicate if available
 
-  const existedUser = User.findOne({ $or: [{ email }, { username }] });
+  const existedUser = await User.findOne({ $or: [{ email }, { username }] });
   if (existedUser) {
     throw new ApiError(
       409,
@@ -53,10 +52,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // usually we get data from body but to handle images we injected multer so we have req.files access through multer as multer inject files into req method
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
   // avatar has multiple properties we need first prop ;
 
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
   // validate Avater Image required
   if (!avatarLocalPath) {
@@ -66,11 +65,11 @@ const registerUser = asyncHandler(async (req, res) => {
   // All file are available  Upload on cloudinary --> unlik uploaded file
   // WOOO:: Here is a catch we used multer to upload images on our db first and call it local file  then we upload our local file into cloud later without any hurry if we encounter any delay or error can try again but it will not disturb user and will not hamper user experience
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  const avatarLocal = await uploadOnCloudinary(avatarLocalPath);
 
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const coverImageLocal = await uploadOnCloudinary(coverImageLocalPath);
   // Validate
-  if (!avatar) {
+  if (!avatarLocal) {
     throw new ApiError(400, "Avatar file is required");
   }
 
@@ -78,12 +77,15 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Every time User talk with db so just call create and pass all required field
 
+  console.log(req.body);
+
   const user = await User.create({
     fullName,
     email,
     username,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "",
+    password,
+    avatar: avatarLocal.url,
+    coverImage: coverImageLocal?.url || "",
   });
 
   // Once user created it will be stored as small user and to validate user
