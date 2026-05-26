@@ -4,6 +4,32 @@ import { User } from "../model/user.model.js";
 import { uploadOnCloudinary } from "../Utils/cloudinary.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 
+// Gererate Access and refresh token method to use when required
+
+const generateAccessTokenAndRefreshToken = async (userId) => {
+  try {
+    // TODO :: Must repeate this code again and again
+    const user = await User.findById(userId); // get user form userId we receive user id when this generate method is called
+
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+
+    user.refreshToken = refreshToken; // now add refresh token to user
+
+    await user.save({
+      // After successfull login check for user's refresh token on db
+      validateBeforeSave: false,
+    });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while creating AccessToken and RefreshToken",
+    );
+  }
+};
+
 const registerUser = asyncHandler(async (req, res) => {
   // register user controller need fullname , email , username , avatar  and all fields mentioned on userModel
   // check all mandetory field are provided
@@ -122,4 +148,78 @@ const registerUser = asyncHandler(async (req, res) => {
   // don't touch it
 });
 
-export { registerUser };
+// :: NEW SECTION HERE ===> LOGIN USER
+
+const loginUserController = asyncHandler(async (req, res) => {
+  //TODO :: Get username , email , password
+  // Validate , Inject middleware to find user id and and compare password
+  // if password match login user and retun data
+  // generate  accessstoken and refresh token
+  // pass it through cookies
+  //
+
+  const { username, password, email } = req.body;
+
+  if (!username || !email) {
+    throw new ApiError(400, "Username or password is required");
+  }
+  // User is in db call it and get also save it's reference into a varaible called user for further operations
+
+  const user = await User.findOne({
+    $or: [{ username }, { email }],
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User Does not exist");
+  }
+
+  // if user found we check password but how ? create a method to check password -> call the methos ispassword correct
+  const isPasswordValid = await user.isPasswordCorrect(password); // called a method to check password
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid Password");
+  }
+
+  // We require Access and refresh token many time so create a method
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
+  // we have username from login so pass id through it to get access and refresh token
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken",
+  );
+  // Remove password and refresh token because we no neeed to send password back to client
+
+  // send cookies to user and secure true means only through server side it can be changen or modifies
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  // After all return response
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      // we don't need to send saparate json but we are sendin in case if user wish to save cookies self to use in mobile app and other
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User Logged In Successfully",
+      ),
+    );
+
+  //
+  //
+  //
+  //
+});
+
+// NEXT :: LOGOUT USER
+
+export { registerUser, loginUserController };
