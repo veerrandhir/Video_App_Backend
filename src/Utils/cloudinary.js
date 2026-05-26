@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import { fstat } from "node:fs";
-import streamifier from "streamifier";
+
 import fs from "fs";
 
 // Configure Cloudinary using environment variables
