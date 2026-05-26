@@ -11,7 +11,8 @@ const router = Router();
 
 router.route("/register").post(
   // before calling register user we inject multer middleware to upload files becauce we can automitaclly handle text info but to handle file we need middleware
-  upload.fields(
+  upload.fields([
+    //BUG::  multer.fields require array
     // no. of objects depends on how many files we required
     // we are handling only two fils so need two object
     {
@@ -22,7 +23,8 @@ router.route("/register").post(
       name: "coverImage",
       maxCount: 1,
     },
-  ),
+  ]),
+
   registerUser,
 );
 
