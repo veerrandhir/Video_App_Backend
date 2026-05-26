@@ -55,10 +55,21 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   // avatar has multiple properties we need first prop ;
 
-  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+  // const coverImageLocalPath = req.files?.coverImage?.[0]?.path; // This will give error if no cover image provided
 
-  // validate Avater Image required
+  let coverImageLocalPath; // declear globally to avoid refference error
+  // check manually to solve error
+
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
+  }
+
   if (!avatarLocalPath) {
+    // validate Avater Image required
     throw new ApiError(400, "Avatar image not found");
   }
 
@@ -77,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Every time User talk with db so just call create and pass all required field
 
-  console.log(req.body);
+  // console.log(req.body);
 
   const user = await User.create({
     fullName,
