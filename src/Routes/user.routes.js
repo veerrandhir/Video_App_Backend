@@ -1,7 +1,13 @@
 import { Router } from "express";
-import { registerUser } from "../Controller/user.controller.js";
+import {
+  registerUser,
+  userLogOutController,
+  loginUserController,
+  refreshAccessTokenController,
+} from "../Controller/user.controller.js";
 import express from "express";
 import { upload } from "../Middleware/multer.middleware.js";
+import { verifyJWT } from "../Middleware/auth.middleware.js";
 
 const router = Router();
 // no need to keep it in variable
@@ -28,4 +34,15 @@ router.route("/register").post(
   registerUser,
 );
 
+// LOGIN CONTROLLER
+
+router.route("/login").post(userLogInController);
+
+// SECURE ROUTE
+router.route("/logout").post(verifyJWT, userLogOutController);
+router.route("/refresh-accesstoken").post(refreshAccessTokenController);
+router
+  .route("/change-current-password")
+  .put(verifyJWT, changeCurentPasswordController);
+router.route("/getuser").post(verifyJWT, getCurrentUserController);
 export default router;
