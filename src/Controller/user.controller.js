@@ -4,6 +4,8 @@ import { User } from "../model/user.model.js";
 import { uploadOnCloudinary } from "../Utils/cloudinary.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 
+import jwt from "jsonwebtoken";
+
 // Gererate Access and refresh token method to use when required
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
@@ -221,5 +223,123 @@ const loginUserController = asyncHandler(async (req, res) => {
 });
 
 // NEXT :: LOGOUT USER
+// Get user => we don't have user so create a middleware and get user through jwtverify
 
-export { registerUser, loginUserController };
+const userLogOutController = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id, // here is a magic happened we pass verifyJWT as middleware  in logout router and it give us access of all methods
+
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(200)
+    .clearCookies("accessToken", options)
+    .clearCookies("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+// Refresh token and access token used so that user don't need to give email and password again and again
+
+const refreshAccessTokenController = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookie.refreshToken || user.body.refreshToken;
+  if (!incomingRefreshToken) {
+    throw new ApiError(400, "Unauthorized request");
+  }
+
+  const decodeToken = jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+  );
+
+  if (!decodeToken) {
+    throw new ApiError(404, "Token not found ");
+  }
+
+  const user = await User.findById(decodeToken?._id);
+  if (!user) {
+    throw new ApiError(401, "Invalid refresh Token");
+  }
+
+  if (incomingRefreshToken !== user?.refreshToken) {
+    throw new ApiError(401, "Refresh token is Expired or used");
+  }
+  // If everything is ok and passed then generate new accesstoke and set into cookie
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  // Afret option seting for cookie
+  const { generatedAccessToken, generatedRefreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
+
+  return res
+    .status(200)
+    .cookie("accessToken", generatedAccessToken, options)
+    .cookie("refreshToken", generateRefreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          accessToken: generatedAccessToken,
+          refreshToken: generatedRefreshToken,
+        },
+        "Access Token refreshed",
+      ),
+    );
+});
+
+// Change password controller
+// TODO :: Get old password and newPassword form req.body
+// Check password correct using check password method
+// Set password into user
+// return res no need to return user data
+
+const changeCurentPasswordController = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user?._id);
+  const checkIsPasswordCorrect = user.isPasswordCorrect(oldPassword);
+
+  if (!checkIsPasswordCorrect) {
+    throw new ApiError(400, "Invalid Old Password");
+  }
+
+  user.password = newPassword;
+
+  await user.save({ validateBeforeSave: false }); // Because we already have user logined As we injected middleware verifyJwt
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+// To get user we need to just make a request and use middleware to verify user is login
+// So we use verifyJwt just  or authmiddleware to check user is login or  not in the router
+const getCurrentUserController = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User fetched successfully"));
+});
+
+export {
+  registerUser,
+  loginUserController,
+  userLogOutController,
+  refreshAccessTokenController,
+  changeCurentPasswordController,
+  getCurrentUserController,
+};
