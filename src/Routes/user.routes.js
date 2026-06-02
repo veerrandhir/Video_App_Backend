@@ -4,6 +4,7 @@ import {
   userLogOutController,
   loginUserController,
   refreshAccessTokenController,
+  updateAccountDetailsController,
 } from "../Controller/user.controller.js";
 import express from "express";
 import { upload } from "../Middleware/multer.middleware.js";
@@ -45,4 +46,5 @@ router
   .route("/change-current-password")
   .put(verifyJWT, changeCurentPasswordController);
 router.route("/getuser").post(verifyJWT, getCurrentUserController);
+router.route("/updatuser").post(verifyJWT, updateAccountDetailsController);
 export default router;
