@@ -335,6 +335,29 @@ const getCurrentUserController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "User fetched successfully"));
 });
 
+// get data form req.body
+// check user is logined or not
+// If user is logged in update changes and save
+// return success status back
+
+const updateAccountDetailsController = asyncHandler(async (req, res) => {
+  const { name, userName, email } = req.body;
+  const user = await User.findById(User._id);
+  if (!user) {
+    return res.status(404).json(new ApiError(404, "User not Found"));
+  }
+  user.userName = userName;
+  user.email = email;
+  user.fullName = name;
+
+  await user.save();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User Updated Successfully"));
+});
+
+const updateCoverImageController = asyncHandler(async (req, res) => {});
+
 export {
   registerUser,
   loginUserController,
@@ -342,4 +365,5 @@ export {
   refreshAccessTokenController,
   changeCurentPasswordController,
   getCurrentUserController,
+  updateAccountDetailsController,
 };
