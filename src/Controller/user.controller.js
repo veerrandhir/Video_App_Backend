@@ -342,7 +342,7 @@ const getCurrentUserController = asyncHandler(async (req, res) => {
 
 const updateAccountDetailsController = asyncHandler(async (req, res) => {
   const { name, userName, email } = req.body;
-  const user = await User.findById(User._id);
+  const user = await User.findById(req.user._id); // need to use findbyidandupdate
   if (!user) {
     return res.status(404).json(new ApiError(404, "User not Found"));
   }
@@ -356,7 +356,12 @@ const updateAccountDetailsController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User Updated Successfully"));
 });
 
-const updateCoverImageController = asyncHandler(async (req, res) => {});
+const updateCoverImageController = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.file?.path;
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, "Cover image file is missing");
+  }
+});
 
 export {
   registerUser,
