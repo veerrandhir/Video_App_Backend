@@ -14,6 +14,7 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
     const user = await User.findById(userId); // get user form userId we receive user id when this generate method is called
 
     const accessToken = await user.generateAccessToken();
+
     const refreshToken = await user.generateRefreshToken();
 
     user.refreshToken = refreshToken; // now add refresh token to user
